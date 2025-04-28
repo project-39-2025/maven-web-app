@@ -1,0 +1,52 @@
+node{
+
+    def mavenHome = tool name: 'maven399'
+ stage('1clone'){
+     git "https://github.com/project-39-2025/maven-web-app"
+  }
+
+stage('2Test+build'){
+sh "${mavenHome}/bin/mvn clean package" //linux OS
+
+}
+
+stage('3codeQualityAnalysis'){
+    sh "${mavenHome}/bin/mvn sonar:sonar"
+  }
+
+ stage('4uploads2Nexus'){
+    sh "${mavenHome}/bin/mvn deploy"
+  } 
+
+stage('5deploy2UAT'){
+
+deploy adapters: [tomcat9(credentialsId: 'a9b65a3b-6530-4b00-bcab-2125744b50b0', path: '', url: 'http://3.133.134.162:8289/')], contextPath: null, war: 'target/*war'
+
+}
+
+stage('6ManualApproval'){
+    sh "echo 'please review and approve' "
+    timeout(time:5, unit:'MINUTES')
+{    
+input ' message: \'Application ready for deployment, Please review and approve\''
+}
+
+}
+
+stage('7deploy2prod'){
+    //deploy to container
+
+deploy adapters: [tomcat9(credentialsId: 'a9b65a3b-6530-4b00-bcab-2125744b50b0', path: '', url: 'http://3.133.134.162:8289/')], contextPath: null, war: 'target/*war'
+
+}
+
+ stage('8notification'){
+  //emailtext:extendedEmail
+  emailext body: '''Hi  Team
+
+Application deployment sucessfull''', recipientProviders: [developers(), previous(), upstreamDevelopers()], subject: 'APP status'
+
+}
+
+
+}
