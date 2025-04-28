@@ -1,0 +1,80 @@
+pipeline {
+  agent any 
+  tools {
+    maven 'maven399'
+    // node 'node2.15' // Uncomment if needed
+  }
+  stages { 
+    stage('1CloneCode') {
+      steps {
+        sh "echo 'Cloning the latest application version'"
+        git "https://github.com/project-39-2025/maven-web-app.git"
+      }
+    }
+    stage('2test+build') {
+      steps {
+        sh "echo 'Running JUnit test cases'"
+        sh "echo 'Testing must pass to create artifacts'"
+        sh "mvn clean package"
+      }
+    }
+    stage('3CodeQuality') {
+      steps {
+        sh "echo 'Performing Code Quality Analysis'"
+        sh "echo 'Code Quality must meet the benchmark before deployment'"
+        sh "mvn sonar:sonar"
+      }
+    }
+    stage('4UploadArtifacts') {
+      steps {
+        sh "echo 'Uploading Artifacts'"
+        sh "mvn deploy"
+      }
+    } 
+    stage('5Deploy2UAT') {
+      steps {
+        sh "echo 'Deploying to UAT'"
+        deploy adapters: [tomcat9(credentialsId: 'a9b65a3b-6530-4b00-bcab-2125744b50b0', path: '', url: 'http://3.133.134.162:8289/')], contextPath: null, war: 'target/*.war'
+      }
+    }
+    stage('6ManualApproval') {
+      steps {
+        sh "echo 'Please review the application and accept'"
+        timeout(time: 6, unit: 'MINUTES') {
+          input message: 'Application ready for deployment, please review and approve'
+        }
+      }
+    }
+    stage('7Deploy2Prod') {
+      steps {
+        sh "echo 'Deploying app to Production/Market'"
+        deploy adapters: [tomcat9(credentialsId: 'a9b65a3b-6530-4b00-bcab-2125744b50b0', path: '', url: 'http://3.133.134.162:8289/')], contextPath: null, war: 'target/*.war'
+      }
+    }
+  }
+
+  post {
+    success {
+      emailext(
+        body: '''Hi team,
+Application has been successfully deployed to Production.
+
+Regards,
+Team03''',
+        recipientProviders: [buildUser(), developers()],
+        subject: 'Deployment Status: SUCCESS'
+      )
+    }
+    failure {
+      emailext(
+        body: '''Hi team,
+Deployment failed. Please check the Jenkins logs.
+
+Regards,
+Team03''',
+        recipientProviders: [buildUser(), developers()],
+        subject: 'Deployment Status: FAILED'
+      )
+    }
+  }
+}
