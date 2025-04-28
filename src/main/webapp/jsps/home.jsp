@@ -16,7 +16,7 @@
         Landmark Technologies, the Pride of Africa.
 	Class39 DevOps MasterClass started on Feb 8, 2025.
         Class30 DevOps MasterClass will start on saturday June 8, 2025. thank you
-        Please invite all your contacts and friends for this life changing course. every member of team 03 has been hired with at least 2 jobs ---$350k. Amen. Thank you Emmanuel.
+        Please invite all your contacts and friends for this life changing course. every member of team 03 has been hired with at least 2 jobs ---$350k. Amen. Thank you Team03
 </h1>
 <hr>
 <br>
